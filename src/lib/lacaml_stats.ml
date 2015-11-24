@@ -50,3 +50,23 @@ let normalize ?(demean=true) ?(scale=true) ?(unbiased=true) m =
     |> Mat.of_col_vecs
   in
   adj, mmm
+
+let col_mean_mat m =
+  let n = float (Mat.dim1 m) in
+   Mat.fold_cols (fun a v ->
+      col_mean n v :: a) [] m
+   |> List.rev
+   |> Vec.of_list
+
+let row_mean_mat a =
+  let m = Mat.dim1 a in
+  let s = Mat.fold_cols (fun a v -> Vec.add a v) (Vec.make0 m) a in
+  let n = float (Mat.dim2 a) in
+  scal (1. /. n) s;
+  s
+  
+let row_scatter a =
+  let m = row_mean_mat a in
+  let alpha = -1.0 *. float (Mat.dim2 a) in
+  ger ~alpha m m (gemm a ~transb:`T a)
+
